@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Покупка {{ item.name }}{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/item_detail.css' %}">{% endblock%}
+{% block main %}
+  <div class="container">
+    <div class="item-card">
+        <div class="item-header">
+          <h1 class="item-title">{{ item.name }}</h1>
+          <div class="item-price">
+            <span class="price-amount">${{ item.price }}</span>
+            <span class="price-currency">{{ item.currency|upper }}</span>
+          </div>
+        </div>
+        <div class="item-content">
+          <div class="description-section">
+              <h3><i class="fas fa-align-left"></i> Описание</h3>
+              <p class="description-text">{{ item.description }}</p>
+            </div>
+            <div class="item-features">
+              <div class="feature">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>Безопасная оплата</span>
+              </div>
+              <div class="feature">
+                  <i class="fas fa-bolt"></i>
+                  <span>Мгновенная доставка</span>
+              </div>
+              <div class="feature">
+                  <i class="fas fa-headset"></i>
+                  <span>Поддержка 24/7</span>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="payment-options">
+      <h2 class="section-title"><i class="fas fa-credit-card"></i> Способ оплаты</h2>
+      <div class="payment-buttons">
+        <button id="checkout-button" class="btn btn-primary">
+          <div class="btn-content">
+            <i class="fas fa-shopping-cart"></i>
+            <div class="btn-text">
+                <span class="btn-title">Быстрая оплата</span>
+                <span class="btn-subtitle">Stripe Checkout</span>
+            </div>
+          </div>
+          <i class="fas fa-arrow-right btn-arrow"></i>
+          </button>
+          <button id="payment-intent-button" class="btn btn-secondary">
+            <div class="btn-content">
+                <i class="fas fa-credit-card"></i>
+                <div class="btn-text">
+                    <span class="btn-title">Расширенная оплата</span>
+                    <span class="btn-subtitle">Stripe Elements</span>
+                </div>
+            </div>
+            <i class="fas fa-arrow-right btn-arrow"></i>
+          </button>
+        </div>
+        <div class="payment-info">
+          <p><i class="fas fa-lock"></i> Все платежи защищены с помощью Stripe</p>
+          <p><i class="fas fa-sync"></i> Возврат средств в течение 30 дней</p>
+        </div>
+    </div>
+    <div class="loading-overlay" id="loading">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p class="loading-text">Обработка платежа...</p>
+        <p class="loading-subtext">Пожалуйста, подождите</p>
+      </div>
+    </div>
+    <div class="error-message" id="error-message"></div>
+      <div class="payment-form" id="payment-form">
+        <div class="form-header">
+          <h3><i class="fas fa-credit-card"></i> Введите данные карты</h3>
+          <button class="close-form" id="close-form">&times;</button>
+        </div>
+          <div class="form-body">
+              <div id="payment-element"></div>
+              <div class="card-icons">
+                <img src="https://js.stripe.com/v3/fingerprinted/img/visa-3656285c2f641b4d4049a36b7b5b6b5f.svg" alt="Visa">
+                <img src="https://js.stripe.com/v3/fingerprinted/img/mastercard-4d8844094130711885b5e41b28c9848f.svg" alt="Mastercard">
+                <img src="https://js.stripe.com/v3/fingerprinted/img/amex-a3b4db9a4a5fe6e5c286ed8d2898c4bd.svg" alt="American Express">
+              </div>
+              <button id="submit-payment" class="btn btn-pay">
+                <i class="fas fa-lock"></i> Оплатить ${{ item.price }}
+              </button>
+              <div class="security-notice">
+                <i class="fas fa-shield-check"></i> Ваши платежные данные защищены
+              </div>
+          </div>
+      </div>
+  </div>
+  <script type="text/javascript">
+    var stripe = Stripe('{{ stripe_publishable_key }}');
+    function showLoading() {
+        document.getElementById('loading').style.display = 'flex';
+    }
+    function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+    }
+    function showError(message) {
+        const errorEl = document.getElementById('error-message');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        setTimeout(() => {
+            errorEl.style.display = 'none';
+        }, 5000);
+    }
+    function clearError() {
+        document.getElementById('error-message').style.display = 'none';
+    }
+    document.getElementById('close-form').addEventListener('click', function() {
+        document.getElementById('payment-form').style.display = 'none';
+    });
+    document.getElementById('checkout-button').addEventListener('click', function() {
+        clearError();
+        showLoading();
+        fetch('{% url "create-checkout-session" item.id %}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            return stripe.redirectToCheckout({ sessionId: data.id });
+        })
+        .then(result => {
+            if (result && result.error) {
+                showError(result.error.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showError('Произошла ошибка: ' + error.message);
+        });
+    });
+    document.getElementById('payment-intent-button').addEventListener('click', function() {
+        clearError();
+        showLoading();
+        fetch('{% url "create-payment-intent" item.id %}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            const elements = stripe.elements({
+                clientSecret: data.clientSecret,
+                appearance: {
+                    theme: 'stripe',
+                    variables: {
+                        colorPrimary: '#6772e5',
+                        colorBackground: '#f8f9fa',
+                        colorText: '#333',
+                        fontFamily: 'Segoe UI, system-ui, sans-serif',
+                    }
+                },
+            });
+            const paymentElement = elements.create('payment');
+            paymentElement.mount('#payment-element');
+            document.getElementById('payment-form').style.display = 'block';
+            document.getElementById('submit-payment').addEventListener('click', async (e) => {
+                e.preventDefault();
+                showLoading();
+                
+                const {error} = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: {
+                        return_url: '{{ domain }}/success/',
+                    },
+                });
+                hideLoading();
+                if (error) {
+                    showError(error.message);
+                }
+            });
+        })
+        .catch(error => {
+            hideLoading();
+            showError('Произошла ошибка: ' + error.message);
+        });
+    });
+    document.addEventListener('click', function(e) {
+      const form = document.getElementById('payment-form');
+      if (form.style.display === 'block' && 
+          !form.contains(e.target) && 
+          !document.getElementById('payment-intent-button').contains(e.target)) {
+          form.style.display = 'none';
+      }
+    });
+  </script>
+{% endblock %}

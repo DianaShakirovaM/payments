@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Оплата успешна!{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/success.css' %}">{% endblock %}
+{% block main %}
+  <div class="container">
+    <div class="success-card">
+      <div class="success-animation">
+          <div class="circle-animation">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+          </div>
+          <div class="success-icon">
+            <i class="fas fa-check"></i>
+          </div>
+      </div>
+      <h1 class="success-title">Оплата прошла успешно!</h1>
+      <p class="success-message">
+        Спасибо за покупку! Ваш платеж был успешно обработан.
+      </p>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const elements = document.querySelectorAll('.success-animation, .success-title, .success-message, .order-summary, .action-buttons');
+      
+      elements.forEach((element, index) => {
+          setTimeout(() => {
+              element.style.opacity = '1';
+              element.style.transform = 'translateY(0)';
+          }, index * 200);
+      });
+    });
+    function createConfetti() {
+      const colors = ['#28a745', '#6772e5', '#ff6b6b', '#ffd166', '#06d6a0'];
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = Math.random() * 10 + 5 + 'px';
+        confetti.style.opacity = Math.random() * 0.5 + 0.5;
+        document.body.appendChild(confetti);
+        const animation = confetti.animate([
+            { transform: 'translateY(-100vh) rotate(0deg)' },
+            { transform: 'translateY(100vh) rotate(360deg)' }
+        ], {
+            duration: Math.random() * 3000 + 2000,
+            easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+        });
+        animation.onfinish = () => confetti.remove();
+      }
+    }
+    setTimeout(createConfetti, 500);
+  </script>
+{% endblock %}

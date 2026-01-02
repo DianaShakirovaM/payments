@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Платеж отменен{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/cancel.css' %}">{% endblock %}
+{% block main %}
+  <div class="container">
+    <div class="icon-wrapper">
+      <div class="cancel-icon">✕</div>
+    </div>
+    <h1>Платеж отменен</h1>
+    <p class="message">
+      Ваш платеж был <span class="highlight">отменен</span>. 
+      С вашего счета <span class="highlight">не списаны</span> денежные средства.
+    </p>
+    <p class="message">
+      Если у вас возникли проблемы с оплатой, вы можете повторить попытку 
+      или обратиться в службу поддержки.
+    </p>
+    <div class="info-box">
+      <p><strong>Важно:</strong> Средства могут быть временно заблокированы</p>
+      <p>Обычно они возвращаются на карту в течение 1-5 рабочих дней</p>
+    </div>
+    <div class="support">
+      <p>Нужна помощь? Напишите нам:</p>
+      <p>
+        <a href="mailto:support@example.com">support@example.com</a> 
+      </p>
+    </div>
+  </div>
+{% endblock %}
