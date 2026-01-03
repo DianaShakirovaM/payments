@@ -55,7 +55,9 @@
 ```
 ---
 ## Доступы
- - [Админ-панель](https://myyafoodgram.zapto.org/admin/)
+ - [Админ-панель](https://dianapayments.pythonanywhere.com/admin/)
+ - [Товар (Euro)](https://dianapayments.pythonanywhere.com/item/1/)
+ - [Товар (USD)](https://dianapayments.pythonanywhere.com/item/2/)
  ---
 ## Примеры запросов
 1. Получение списка товаров

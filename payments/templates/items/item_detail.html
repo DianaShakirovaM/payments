@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Покупка {{ item.name }}{% endblock %}
-{% block styles %}<link rel="stylesheet" href="{% static 'css/item_detail.css' %}">{% endblock%}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/item_detail.css' %}">
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock%}
 {% block main %}
   <div class="container">
     <div class="item-card">
